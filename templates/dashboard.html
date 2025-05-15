@@ -1,40 +1,34 @@
+<script>
+    // Auto-refresh every 5 minutes
+    setTimeout(() => location.reload(), 5 * 60 * 1000);
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Facility Dashboard</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        body { display: flex; }
-        #map { height: 100vh; width: 60vw; }
-        table { width: 40vw; font-family: sans-serif; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #ccc; }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <table>
-        <thead><tr><th>Facility</th><th>Status</th></tr></thead>
-        <tbody>
-            {% for row in data %}
-            <tr>
-                <td>{{ row['Facility'] }}</td>
-                <td>{{ row['Status'] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([31.3, -94.7], 7);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-        }).addTo(map);
-        {% for row in data %}
-        L.marker([{{ row['Latitude'] }}, {{ row['Longitude'] }}]).addTo(map)
-            .bindPopup("<b>{{ row['Facility'] }}</b><br>{{ row['Status'] }}");
-        {% endfor %}
-    </script>
-</body>
-</html>
+    var map = L.map('map').setView([31.3, -94.7], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    const greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const redIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    {% for row in data %}
+    L.marker([{{ row['Latitude'] }}, {{ row['Longitude'] }}], {
+        icon: {{ 'greenIcon' if row['Status'] == 'UP' else 'redIcon' }}
+    }).addTo(map)
+        .bindPopup("<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br>{{ row['URL'] }}");
+    {% endfor %}
+</script>
