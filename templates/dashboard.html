@@ -34,4 +34,8 @@ L.circleMarker([{{ row['Latitude'] }}, {{ row['Longitude'] }}], {
 .bindPopup("<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br><a href='{{ row['URL'] }}' target='_blank'>Visit</a>");
 {% endfor %}
 
+<script>
+    setTimeout(() => {
+        window.location.reload();
+    }, 5 * 60 * 1000); // 5 minutes
 </script>
