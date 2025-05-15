@@ -8,32 +8,32 @@ app = Flask(__name__)
 def index():
     df = pd.read_excel('UpDown.xlsm')
 
-    # Ensure required columns exist
-    required_cols = {'Facility', 'Latitude', 'Longitude', 'URL'}
-    if not required_cols.issubset(df.columns):
-        return "Missing required columns in the Excel file.", 500
+    # Normalize column names
+    df = df.rename(columns={
+        'Facility Code': 'Facility',
+        'lat': 'Latitude',
+        'lon': 'Longitude'
+    })
 
-    results = []
-    for _, row in df.iterrows():
-        url = row['URL']
+    # Drop rows with missing location or URL
+    df = df.dropna(subset=['Latitude', 'Longitude', 'URL'])
+
+    # Perform HTTP GET checks
+    statuses = []
+    for url in df['URL']:
         try:
-            resp = requests.get(url, timeout=5)
-            status_code = resp.status_code
+            response = requests.get(url, timeout=5)
+            status_code = response.status_code
             status = 'Up' if status_code == 200 else 'Down'
-        except Exception:
-            status_code = 0
+        except:
+            status_code = None
             status = 'Down'
+        statuses.append((status, status_code))
 
-        results.append({
-            'Facility': row['Facility'],
-            'Latitude': row['Latitude'],
-            'Longitude': row['Longitude'],
-            'URL': url,
-            'Status': status,
-            'StatusCode': status_code
-        })
+    df['Status'], df['StatusCode'] = zip(*statuses)
 
-    return render_template('dashboard.html', data=results)
+    data = df.to_dict(orient='records')
+    return render_template('dashboard.html', data=data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
