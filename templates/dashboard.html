@@ -25,10 +25,13 @@
         shadowSize: [41, 41]
     });
 
-    {% for row in data %}
-    L.marker([{{ row['Latitude'] }}, {{ row['Longitude'] }}], {
-        icon: {{ 'greenIcon' if row['Status'] == 'UP' else 'redIcon' }}
-    }).addTo(map)
-        .bindPopup("<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br>{{ row['URL'] }}");
-    {% endfor %}
+{% for row in data %}
+L.circleMarker([{{ row['Latitude'] }}, {{ row['Longitude'] }}], {
+    color: '{{ "green" if row["StatusCode"] == 200 else "red" }}',
+    radius: 8,
+    fillOpacity: 0.8
+}).addTo(map)
+.bindPopup("<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br><a href='{{ row['URL'] }}' target='_blank'>Visit</a>");
+{% endfor %}
+
 </script>
