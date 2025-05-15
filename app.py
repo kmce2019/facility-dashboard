@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 
-EXCEL_FILE = 'UporDown.xlsm'  # Your updated Excel filename
+EXCEL_FILE = '/app/UporDown.xlsm'
 
 def read_facility_data():
     df = pd.read_excel(EXCEL_FILE, header=0)  # explicitly set first row as header
