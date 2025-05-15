@@ -3,26 +3,20 @@
 <head>
     <title>Facility Dashboard</title>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="300">
+    <meta http-equiv="refresh" content="300"> <!-- Refresh every 5 minutes -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { display: flex; margin: 0; }
+        body { display: flex; }
         #map { height: 100vh; width: 60vw; }
-        table { width: 40vw; font-family: sans-serif; border-collapse: collapse; overflow-y: scroll; height: 100vh; display: block; }
-        th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-        thead { background-color: #f2f2f2; }
+        table { width: 40vw; font-family: sans-serif; border-collapse: collapse; }
+        th, td { padding: 8px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <table>
         <thead>
-            <tr>
-                <th>Facility</th>
-                <th>Status</th>
-                <th>Status Code</th>
-                <th>URL</th>
-            </tr>
+            <tr><th>Facility</th><th>Status</th><th>Status Code</th></tr>
         </thead>
         <tbody>
             {% for row in data %}
@@ -30,7 +24,6 @@
                 <td>{{ row['Facility'] }}</td>
                 <td>{{ row['Status'] }}</td>
                 <td>{{ row['StatusCode'] }}</td>
-                <td><a href="{{ row['URL'] }}" target="_blank">{{ row['URL'] }}</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -44,15 +37,16 @@
         }).addTo(map);
 
         {% for row in data %}
-        var color = "{{ 'green' if row['StatusCode'] == 200 else 'red' }}";
+        var color = "{{ row['Status'] }}" === "Up" ? "green" : "red";
         var marker = L.circleMarker([{{ row['Latitude'] }}, {{ row['Longitude'] }}], {
-            color: color,
             radius: 8,
             fillColor: color,
+            color: color,
+            weight: 1,
+            opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(
-            "<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br>Code: {{ row['StatusCode'] }}"
-        );
+        }).addTo(map);
+        marker.bindPopup("<b>{{ row['Facility'] }}</b><br>Status: {{ row['Status'] }}<br>Code: {{ row['StatusCode'] }}");
         {% endfor %}
     </script>
 </body>
