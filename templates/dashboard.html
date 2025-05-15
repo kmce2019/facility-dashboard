@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facility Dashboard</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { display: flex; }
+        #map { height: 100vh; width: 60vw; }
+        table { width: 40vw; font-family: sans-serif; border-collapse: collapse; }
+        th, td { padding: 8px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <table>
+        <thead><tr><th>Facility</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row['Facility'] }}</td>
+                <td>{{ row['Status'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([31.3, -94.7], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+        {% for row in data %}
+        L.marker([{{ row['Latitude'] }}, {{ row['Longitude'] }}]).addTo(map)
+            .bindPopup("<b>{{ row['Facility'] }}</b><br>{{ row['Status'] }}");
+        {% endfor %}
+    </script>
+</body>
+</html>
