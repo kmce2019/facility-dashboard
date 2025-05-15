@@ -9,12 +9,15 @@ EXCEL_FILE = 'UporDown.xlsm'  # Your updated Excel filename
 
 # Read the Excel file and return a clean DataFrame
 def read_facility_data():
-    print(f"Loading Excel file: {EXCEL_FILE}")
-    df = pd.read_excel(EXCEL_FILE)
-    print("Columns read from Excel (raw):", df.columns.tolist())
-    df.columns = df.columns.str.strip()  # Remove whitespace from headers
-    print("Columns after stripping whitespace:", df.columns.tolist())
-    return df  # Return full df for inspection
+    df = pd.read_excel(EXCEL_FILE, header=0)  # explicitly set first row as header
+    df.columns = df.columns.str.strip()  # clean column names
+    
+    # Optional: print columns to debug if needed
+    print("Columns read:", df.columns.tolist())
+    
+    # Select only the columns you need
+    df = df[['Facility', 'Latitude', 'Longitude', 'URL']].dropna()
+    return df
 
 # Check status of a single facility
 def check_status(row):
