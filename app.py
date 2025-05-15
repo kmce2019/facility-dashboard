@@ -4,44 +4,36 @@ import requests
 
 app = Flask(__name__)
 
-def get_status(url):
-    try:
-        response = requests.get(url, timeout=5)
-        return 200 if response.status_code == 200 else response.status_code
-    except Exception:
-        return 0  # Unreachable or bad request
-
 @app.route('/')
 def index():
     df = pd.read_excel('UpDown.xlsm')
 
-    # Ensure all necessary columns exist
-    required_columns = {'Facility', 'Latitude', 'Longitude', 'URL'}
-    if not required_columns.issubset(df.columns):
-        return "Missing one or more required columns in Excel file."
+    # Ensure required columns exist
+    required_cols = {'Facility', 'Latitude', 'Longitude', 'URL'}
+    if not required_cols.issubset(df.columns):
+        return "Missing required columns in the Excel file.", 500
 
-    # Drop any rows without lat/lon or URL
-    df = df.dropna(subset=['Latitude', 'Longitude', 'URL'])
-
-    data = []
+    results = []
     for _, row in df.iterrows():
+        url = row['URL']
         try:
-            lat = float(row['Latitude'])
-            lon = float(row['Longitude'])
-            url = row['URL']
-            status = get_status(url)
-            data.append({
-                'Facility': row['Facility'],
-                'Latitude': lat,
-                'Longitude': lon,
-                'URL': url,
-                'Status': 'UP' if status == 200 else f'DOWN ({status})',
-                'StatusCode': status
-            })
-        except:
-            continue  # Skip bad rows
+            resp = requests.get(url, timeout=5)
+            status_code = resp.status_code
+            status = 'Up' if status_code == 200 else 'Down'
+        except Exception:
+            status_code = 0
+            status = 'Down'
 
-    return render_template('dashboard.html', data=data)
+        results.append({
+            'Facility': row['Facility'],
+            'Latitude': row['Latitude'],
+            'Longitude': row['Longitude'],
+            'URL': url,
+            'Status': status,
+            'StatusCode': status_code
+        })
+
+    return render_template('dashboard.html', data=results)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
