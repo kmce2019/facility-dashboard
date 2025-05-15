@@ -5,18 +5,16 @@ from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 
-EXCEL_FILE = 'UporDown.xlsm'  # make sure this matches your actual file name
+EXCEL_FILE = 'UporDown.xlsm'  # Your updated Excel filename
 
 # Read the Excel file and return a clean DataFrame
 def read_facility_data():
     print(f"Loading Excel file: {EXCEL_FILE}")
     df = pd.read_excel(EXCEL_FILE)
-    print("Columns read from Excel:", df.columns.tolist())
-    # Strip whitespace from column names
-    df.columns = df.columns.str.strip()
+    print("Columns read from Excel (raw):", df.columns.tolist())
+    df.columns = df.columns.str.strip()  # Remove whitespace from headers
     print("Columns after stripping whitespace:", df.columns.tolist())
-    df = df[['Facility', 'Latitude', 'Longitude', 'URL']].dropna()
-    return df
+    return df  # Return full df for inspection
 
 # Check status of a single facility
 def check_status(row):
@@ -42,10 +40,13 @@ def check_status(row):
 @app.route('/status.json')
 def status_json():
     df = read_facility_data()
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        results = list(executor.map(check_status, [row for _, row in df.iterrows()]))
-    return jsonify(results)
+    # For debugging: show columns and sample data in JSON response
+    return jsonify({
+        "columns": df.columns.tolist(),
+        "sample_data": df.head(3).to_dict(orient="records")
+    })
 
+# Optional: route for a simple homepage
 @app.route('/')
 def index():
     return "Facility status API. Access data at /status.json"
