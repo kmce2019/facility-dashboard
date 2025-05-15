@@ -1,12 +1,11 @@
-
 version: '3.8'
 
 services:
-  dashboard:
+  app:
     build: .
-    container_name: facility-dashboard
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/data
-    restart: unless-stopped
+      - ./UporDown.xlsm:/app/UporDown.xlsm:ro  # Mount your Excel file read-only
+    environment:
+      - FLASK_ENV=development
