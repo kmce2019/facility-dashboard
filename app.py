@@ -41,10 +41,11 @@ def status_json():
         results = list(executor.map(check_status, [row for _, row in df.iterrows()]))
     return jsonify(results)
 
-# Optional: route for the original map/dashboard
+# Optional: route for a simple homepage
 @app.route('/')
 def index():
     return "Facility status API. Access data at /status.json"
 
 if __name__ == '__main__':
+    print("Available routes:", app.url_map)  # <-- This line will print the route map
     app.run(host='0.0.0.0', port=5000)
