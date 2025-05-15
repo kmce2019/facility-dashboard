@@ -1,44 +1,28 @@
 from flask import Flask, render_template
 import pandas as pd
 import requests
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
+excel_file = "UpDown.xlsm"
 
-# Helper function to check a single URL
-def check_url(url):
+def check_status(row):
     try:
-        response = requests.get(url, timeout=3)
-        return 'UP' if response.status_code == 200 else 'DOWN', response.status_code
+        response = requests.get(row['URL'], timeout=5)
+        status_code = response.status_code
+        status = "UP" if status_code == 200 else "DOWN"
     except Exception:
-        return 'DOWN', 0
-
-# Fetches the data and performs concurrent status checks
-def fetch_status_data():
-    df = pd.read_excel('UpDown.xlsm')
-
-    # Ensure Status and Status Code columns exist
-    if 'Status' not in df.columns:
-        df['Status'] = ''
-    if 'Status Code' not in df.columns:
-        df['Status Code'] = 0
-
-    urls = df['URL'].tolist()
-
-    # Run concurrent URL checks
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        results = list(executor.map(check_url, urls))
-
-    # Assign results back to DataFrame
-    for index, (status, code) in enumerate(results):
-        df.at[index, 'Status'] = status
-        df.at[index, 'Status Code'] = code
-
-    return df.to_dict(orient='records')
+        status_code = None
+        status = "DOWN"
+    row['Status'] = status
+    row['Status Code'] = status_code
+    return row
 
 @app.route('/')
 def index():
-    data = fetch_status_data()
+    df = pd.read_excel(excel_file)
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        data = list(executor.map(check_status, df.to_dict(orient='records')))
     return render_template('dashboard.html', data=data)
 
 if __name__ == '__main__':
