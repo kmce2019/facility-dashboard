@@ -21,6 +21,7 @@ def index():
 
     # Convert to list of dicts
     data = df.to_dict(orient='records')
+    print("DEBUG DATA >>>", data)  # <-- Add this line
     return render_template('dashboard.html', data=data)
 
 if __name__ == '__main__':
