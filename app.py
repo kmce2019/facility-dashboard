@@ -1,38 +1,44 @@
 from flask import Flask, render_template
 import pandas as pd
 import requests
+import concurrent.futures
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
+# Helper function to check a single URL
+def check_url(url):
+    try:
+        response = requests.get(url, timeout=3)
+        return 'UP' if response.status_code == 200 else 'DOWN', response.status_code
+    except Exception:
+        return 'DOWN', 0
+
+# Fetches the data and performs concurrent status checks
+def fetch_status_data():
     df = pd.read_excel('UpDown.xlsm')
 
-    # Normalize column names
-    df = df.rename(columns={
-        'Facility Code': 'Facility',
-        'lat': 'Latitude',
-        'lon': 'Longitude'
-    })
+    # Ensure Status and Status Code columns exist
+    if 'Status' not in df.columns:
+        df['Status'] = ''
+    if 'Status Code' not in df.columns:
+        df['Status Code'] = 0
 
-    # Drop rows with missing location or URL
-    df = df.dropna(subset=['Latitude', 'Longitude', 'URL'])
+    urls = df['URL'].tolist()
 
-    # Perform HTTP GET checks
-    statuses = []
-    for url in df['URL']:
-        try:
-            response = requests.get(url, timeout=5)
-            status_code = response.status_code
-            status = 'Up' if status_code == 200 else 'Down'
-        except:
-            status_code = None
-            status = 'Down'
-        statuses.append((status, status_code))
+    # Run concurrent URL checks
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        results = list(executor.map(check_url, urls))
 
-    df['Status'], df['StatusCode'] = zip(*statuses)
+    # Assign results back to DataFrame
+    for index, (status, code) in enumerate(results):
+        df.at[index, 'Status'] = status
+        df.at[index, 'Status Code'] = code
 
-    data = df.to_dict(orient='records')
+    return df.to_dict(orient='records')
+
+@app.route('/')
+def index():
+    data = fetch_status_data()
     return render_template('dashboard.html', data=data)
 
 if __name__ == '__main__':
