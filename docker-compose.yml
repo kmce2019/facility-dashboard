@@ -6,6 +6,6 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./UporDown.xlsm:/app/UporDown.xlsm:ro  # Mount your Excel file read-only
+      - home/notmint/Data/UporDown.xlsm:/app/UporDown.xlsm:ro  # Mount your Excel file read-only
     environment:
       - FLASK_ENV=development
