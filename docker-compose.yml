@@ -8,5 +8,5 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./UpDown.xlsm:/app/UpDown.xlsm:ro
+      - ./data:/app/data
     restart: unless-stopped
