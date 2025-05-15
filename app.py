@@ -1,12 +1,13 @@
-
 from flask import Flask, render_template
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    df = pd.read_excel('UpDown.xlsm')
+    excel_path = os.path.join('data', 'UpDown.xlsm')
+    df = pd.read_excel(excel_path)
     data = df.to_dict(orient='records')
     return render_template('dashboard.html', data=data)
 
