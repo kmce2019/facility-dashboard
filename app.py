@@ -5,10 +5,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    # Load the spreadsheet
-    df = pd.read_excel('data/UpDown.xlsm')  # adjust path if needed
+    df = pd.read_excel('data/UpDown.xlsm')
 
-    # ✅ Map actual Excel column names to expected names
+    # Normalize column names
     df.rename(columns={
         'Site Name': 'Facility',
         'Up/Down': 'Status',
@@ -16,12 +15,17 @@ def index():
         'Lon': 'Longitude'
     }, inplace=True)
 
-    # Optional: Filter out rows missing coordinates
+    # Coerce coordinates to numeric
+    df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
+    df['Longitude'] = pd.to_numeric(df['Longitude'], errors='coerce')
+
+    # Drop rows with invalid coordinates
     df = df.dropna(subset=['Latitude', 'Longitude'])
 
-    # Convert to list of dicts
+    # Print debug info to verify
     data = df.to_dict(orient='records')
-    print("DEBUG DATA >>>", data)  # <-- Add this line
+    print("DEBUG DATA >>>", data)
+
     return render_template('dashboard.html', data=data)
 
 if __name__ == '__main__':
