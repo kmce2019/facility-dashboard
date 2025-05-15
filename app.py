@@ -1,13 +1,25 @@
 from flask import Flask, render_template
 import pandas as pd
-import os
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    excel_path = os.path.join('data', 'UpDown.xlsm')
-    df = pd.read_excel(excel_path)
+    # Load the spreadsheet
+    df = pd.read_excel('data/UpDown.xlsm')  # adjust path if needed
+
+    # ✅ Map actual Excel column names to expected names
+    df.rename(columns={
+        'Site Name': 'Facility',
+        'Up/Down': 'Status',
+        'Lat': 'Latitude',
+        'Lon': 'Longitude'
+    }, inplace=True)
+
+    # Optional: Filter out rows missing coordinates
+    df = df.dropna(subset=['Latitude', 'Longitude'])
+
+    # Convert to list of dicts
     data = df.to_dict(orient='records')
     return render_template('dashboard.html', data=data)
 
