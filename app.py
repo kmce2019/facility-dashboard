@@ -5,14 +5,16 @@ from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 
-EXCEL_FILE = 'UporDown.xlsm'
+EXCEL_FILE = 'UporDown.xlsm'  # make sure this matches your actual file name
 
 # Read the Excel file and return a clean DataFrame
 def read_facility_data():
+    print(f"Loading Excel file: {EXCEL_FILE}")
     df = pd.read_excel(EXCEL_FILE)
-    # Strip whitespace from column headers to avoid hidden spaces causing errors
+    print("Columns read from Excel:", df.columns.tolist())
+    # Strip whitespace from column names
     df.columns = df.columns.str.strip()
-    print("Columns in Excel:", df.columns.tolist())  # Debug print for columns
+    print("Columns after stripping whitespace:", df.columns.tolist())
     df = df[['Facility', 'Latitude', 'Longitude', 'URL']].dropna()
     return df
 
