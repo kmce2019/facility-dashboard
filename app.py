@@ -37,7 +37,7 @@ def status_json():
     with ThreadPoolExecutor(max_workers=10) as executor:
         results = list(executor.map(check_status, [row for _, row in df.iterrows()]))
 
-    return jsonify(results)
+    return jsonify({"data": results})
 
 @app.route('/')
 def index():
